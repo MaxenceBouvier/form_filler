@@ -59,9 +59,11 @@ form_filler/
 │   ├── test_user_data_manager.py
 │   ├── test_form_filler.py
 │   └── test_llm_assistant.py
-├── resources/
-│   ├── examples/
-│   └── output/
+├── resources/              # Data directory
+│   ├── user_info/         # User database (NEVER committed)
+│   ├── examples/          # Sample configs (committed)
+│   └── output/            # Generated PDFs (not committed)
+├── form_to_fill/          # Source PDF forms (PDFs not committed)
 ├── pyproject.toml
 ├── requirements.txt
 ├── .gitignore
@@ -69,7 +71,70 @@ form_filler/
 └── README.md
 ```
 
-#### 1.2 Module Dependencies
+#### 1.2 Data Directory Structure
+
+**Critical Security Note:** The project handles sensitive personal and financial data. Proper directory organization and git exclusion is essential.
+
+##### `resources/user_info/`
+**Purpose:** Persistent user data database
+
+**Structure:**
+```
+resources/user_info/
+├── profile_main.json       # Primary user profile
+├── spouse_profile.yaml     # Additional profiles (family members, etc.)
+└── backup_2024.json        # Historical backups
+```
+
+**Key Points:**
+- **NEVER committed to git** - protected by `.gitignore` and CI/CD validation
+- Contains sensitive personal/financial information (SSN, addresses, bank details, etc.)
+- Multiple profiles supported for different users or scenarios
+- Both JSON and YAML formats supported
+- Can be populated by extracting data from already-filled forms
+- Primary data source for `fill-in-pdf` command
+
+**Security Measures:**
+- Excluded in `.gitignore`: `resources/user_info/`
+- CI/CD validation job checks for accidental commits
+- All processing happens locally - data never leaves user's machine
+
+##### `resources/output/`
+**Purpose:** Storage for generated PDF forms
+
+**Behavior:**
+- Default output directory for `fill-in-pdf` command
+- Files follow naming convention: `{original_name}_autofilled.pdf`
+- Not committed to git (avoid repository bloat)
+- Can be safely cleaned/deleted without affecting tool functionality
+
+##### `resources/examples/`
+**Purpose:** Example configurations and templates
+
+**Contents:**
+- Sample user data with anonymized/fake information
+- Template configurations for different form types
+- Documentation examples
+- **Safe to commit** - contains no real user data
+
+**Usage:**
+- Help users understand expected data format
+- Provide starting templates
+- Testing and documentation
+
+##### `form_to_fill/`
+**Purpose:** Source PDF forms
+
+**Dual Use Case:**
+1. **Blank forms:** Place PDFs here to be filled by the tool
+2. **Filled forms:** Place already-completed PDFs here to extract user data and populate database
+
+**Git Behavior:**
+- PDFs excluded via `.gitignore`: `*.pdf`
+- READMEs allowed via exception: `!form_to_fill/README.md`
+- Keeps repository clean while maintaining documentation
+
+#### 1.3 Module Dependencies
 ```
 cli.py
   ↓

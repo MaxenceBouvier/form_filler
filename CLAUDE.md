@@ -18,11 +18,86 @@ Once installed, the utilities are available as command-line entry points.
 
 ## Dependencies
 
-- Python 3.8+
-- PyPDFForm (required) - provides high-level interface for inspecting and filling PDF AcroForms
-- PyYAML (optional) - enables YAML input/output support; JSON is used if unavailable
+- Python >= 3.13 (REQUIRED)
+- PyPDFForm >= 1.4.0 (required) - provides high-level interface for inspecting and filling PDF AcroForms
+- PyYAML >= 6.0 (required) - enables YAML input/output support
+- Hugging Face stack (optional, for LLM features):
+  - transformers >= 4.30.0
+  - torch >= 2.0.0
+  - accelerate >= 0.20.0
+  - sentencepiece >= 0.1.99
+  - tokenizers >= 0.13.0
 
 Dependencies are managed via `pyproject.toml` and installed automatically with the package.
+
+## Directory Structure
+
+The project follows a structured organization for data management and security:
+
+```
+form_filler/
+├── src/form_filler/      # Main package code
+├── tests/                # Test suite
+├── resources/            # Data directory (mixed commit status)
+│   ├── user_info/        # User database - NEVER COMMITTED
+│   ├── output/           # Generated PDFs - NOT COMMITTED
+│   └── examples/         # Example configs - COMMITTED
+├── form_to_fill/         # Source PDF forms
+└── ...
+```
+
+### Critical: `resources/user_info/`
+
+**Purpose:** User data database containing sensitive personal information
+
+**Storage:**
+- Multiple user profiles can be stored as separate files
+- Each profile is a JSON or YAML file (e.g., `john_doe.json`, `jane_smith.yaml`)
+- Contains structured data matching PDF form field names
+- Can be used to extract data from already-filled forms for database population
+
+**Security:**
+- **NEVER committed to git** - protected by `.gitignore` and CI/CD validation
+- Contains sensitive personal/financial information
+- Privacy-first: all data stays local
+
+**Usage by CLI tools:**
+- `update-user-info` reads/writes these files
+- `fill-in-pdf` reads user data from here
+- Can reference by filename: `--user resources/user_info/profile1.json`
+
+### `resources/output/`
+
+**Purpose:** Storage for auto-filled PDF forms
+
+**Behavior:**
+- Default output location for `fill-in-pdf` command
+- Files named: `{original_name}_autofilled.pdf`
+- Not committed to git to avoid repository bloat
+- Can be safely deleted/cleaned up without affecting functionality
+
+### `resources/examples/`
+
+**Purpose:** Sample/template data for documentation and testing
+
+**Contents:**
+- Example user data structures with anonymized/fake data
+- Template configurations
+- Safe to commit - contains no real user information
+- Useful for users to understand expected data format
+
+### `form_to_fill/`
+
+**Purpose:** Source PDF forms (blank or filled)
+
+**Dual Purpose:**
+1. **Input forms:** Place blank PDFs here to be filled
+2. **Reference forms:** Place already-filled PDFs here to extract user data
+
+**Git Behavior:**
+- PDFs are NOT committed (ignored via `.gitignore`)
+- READMEs ARE committed (exception in `.gitignore`)
+- Keeps repository clean while allowing documentation
 
 ## Architecture
 

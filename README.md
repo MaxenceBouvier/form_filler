@@ -42,6 +42,54 @@ uv pip install -e ".[dev]"
 pre-commit install
 ```
 
+## Project Structure
+
+The project uses a `resources/` directory to organize different types of data:
+
+```
+resources/
+├── user_info/          # User database (NEVER committed)
+│   ├── profile1.json   # Individual user profiles
+│   ├── profile2.yaml   # Supports both JSON and YAML
+│   └── ...
+├── output/             # Generated PDFs (not committed)
+│   └── *_autofilled.pdf
+└── examples/           # Example configurations (committed)
+    └── sample_data.json
+```
+
+### Resources Folder Details
+
+#### `resources/user_info/`
+**Purpose:** Your personal data database
+
+- Stores all user information profiles (personal details, addresses, financial info, etc.)
+- Can contain multiple profiles for different users or scenarios
+- Supports both JSON and YAML formats
+- **SECURITY:** This directory is excluded from git and protected by CI/CD validation
+- **Privacy:** Your sensitive tax information never leaves your machine
+
+#### `resources/output/`
+**Purpose:** Storage for generated PDF forms
+
+- All auto-filled PDFs are saved here by default
+- Files follow the naming convention: `{original_name}_autofilled.pdf`
+- Not tracked by git to avoid bloating the repository
+
+#### `resources/examples/`
+**Purpose:** Sample configurations and templates
+
+- Contains example user data structures (with fake/anonymized data)
+- Useful for understanding the expected data format
+- Safe to commit as they contain no real user information
+
+### `form_to_fill/`
+**Purpose:** Source forms to be filled
+
+- Place your blank PDF forms here
+- PDFs are not committed to git (except READMEs)
+- Can also contain filled forms to extract data from
+
 ## Quick Start
 
 ### 1. Extract Required Information
