@@ -1,0 +1,12 @@
+# Core dependencies
+PyPDFForm>=1.4.0
+
+# Optional dependencies for YAML support
+PyYAML>=6.0
+
+# LLM dependencies for AI-assisted form filling
+transformers>=4.30.0
+torch>=2.0.0
+accelerate>=0.20.0
+sentencepiece>=0.1.99
+tokenizers>=0.13.0
