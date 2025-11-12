@@ -1,4 +1,8 @@
-"""JSON file repository implementation."""
+"""JSON file repository implementation.
+
+This module provides a JSON-based implementation of the DataRepository protocol.
+It handles saving and loading structured data in JSON format with UTF-8 encoding.
+"""
 
 import json
 from pathlib import Path
@@ -8,14 +12,34 @@ from form_filler.domain.exceptions import DataRepositoryError
 
 
 class JSONRepository:
-    """JSON file repository implementation."""
+    """JSON file repository implementing DataRepository protocol.
+
+    This class provides JSON-based data persistence with support for:
+    - UTF-8 encoding
+    - Configurable formatting (indentation, ASCII escaping)
+    - Automatic directory creation
+    - User profile listing
+
+    Attributes:
+        ensure_ascii: Whether to escape non-ASCII characters in output.
+        indent: Number of spaces for indentation in output files.
+
+    Examples:
+        >>> from pathlib import Path
+        >>> repo = JSONRepository(indent=2)
+        >>> repo.save({"name": "John"}, Path("user.json"))
+        >>> data = repo.load(Path("user.json"))
+        >>> data["name"]
+        'John'
+    """
 
     def __init__(self, ensure_ascii: bool = False, indent: int = 2):
         """Initialize the JSON repository.
 
         Args:
             ensure_ascii: If True, escape non-ASCII characters.
-            indent: Number of spaces for indentation.
+                         If False (default), preserve Unicode characters.
+            indent: Number of spaces for indentation (default: 2).
         """
         self.ensure_ascii = ensure_ascii
         self.indent = indent
@@ -29,6 +53,10 @@ class JSONRepository:
 
         Raises:
             DataRepositoryError: If save operation fails.
+
+        Examples:
+            >>> repo = JSONRepository()
+            >>> repo.save({"key": "value"}, Path("data.json"))
         """
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -49,6 +77,13 @@ class JSONRepository:
 
         Raises:
             DataRepositoryError: If load operation fails.
+            FileNotFoundError: If path doesn't exist.
+
+        Examples:
+            >>> repo = JSONRepository()
+            >>> data = repo.load(Path("user.json"))
+            >>> isinstance(data, dict)
+            True
         """
         try:
             if not path.exists():
@@ -61,3 +96,57 @@ class JSONRepository:
                 return result
         except Exception as e:
             raise DataRepositoryError(f"Failed to load data from {path}: {e}") from e
+
+    def exists(self, path: Path) -> bool:
+        """Check if data exists at the specified path.
+
+        Args:
+            path: Path to check.
+
+        Returns:
+            True if the file exists, False otherwise.
+
+        Examples:
+            >>> repo = JSONRepository()
+            >>> repo.exists(Path("user.json"))
+            True
+            >>> repo.exists(Path("nonexistent.json"))
+            False
+        """
+        return path.exists() and path.is_file()
+
+    def list_profiles(self, directory: Path) -> list[Path]:
+        """List all JSON profile files in a directory.
+
+        Args:
+            directory: Directory to search for JSON profiles.
+
+        Returns:
+            List of paths to JSON files, sorted by modification time (newest first).
+
+        Raises:
+            DataRepositoryError: If directory access fails.
+
+        Examples:
+            >>> repo = JSONRepository()
+            >>> profiles = repo.list_profiles(Path("resources/user_info"))
+            >>> all(p.suffix == ".json" for p in profiles)
+            True
+        """
+        try:
+            if not directory.exists():
+                return []
+
+            if not directory.is_dir():
+                raise DataRepositoryError(f"Not a directory: {directory}")
+
+            # Find all JSON files in the directory
+            json_files = list(directory.glob("*.json"))
+
+            # Sort by modification time, newest first
+            json_files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+
+            return json_files
+
+        except Exception as e:
+            raise DataRepositoryError(f"Failed to list profiles in {directory}: {e}") from e
