@@ -29,10 +29,11 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
+    "types-PyYAML>=6.0.0",
 ]
 
 [project.scripts]
-extract-required-info = "form_filler.cli:extract_required_info"
+extract-required-info = "form_filler.presentation.cli.commands:extract_required_info"
 update-user-info = "form_filler.cli:update_user_info"
 fill-in-pdf = "form_filler.cli:fill_in_pdf"
 

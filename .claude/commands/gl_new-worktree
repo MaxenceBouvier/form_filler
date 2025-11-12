@@ -1,0 +1,88 @@
+# Create Git Worktree for GitLab Issue
+
+DO NOT IMPLEMENT ANYTHING. DO NOT MODIFY ANY CODE FILES.
+
+This command creates a git worktree for parallel development on a specific GitLab issue.
+
+Follow these steps:
+
+1. **Get repository name:**
+   ```bash
+   REPO_NAME=$(basename $(git rev-parse --show-toplevel))
+   ```
+
+2. **Fetch issue details:**
+   ```bash
+   glab issue view $ARGUMENTS
+   ```
+
+3. **Determine branch type and name:**
+   - For bugs → `fix/$ARGUMENTS-<description>`
+   - For features/enhancements → `feature/$ARGUMENTS-<description>`
+   - Extract a short description (2-4 words) from the issue title
+   - Convert to lowercase with hyphens (e.g., "auth-fix", "api-endpoint")
+
+4. **Create the worktree:**
+   ```bash
+   # Example for feature #5 about user authentication:
+   git worktree add -b feature/5-auth-endpoint ../${REPO_NAME}-feature-5 master
+
+   # Pattern:
+   # git worktree add -b <branch-name> ../${REPO_NAME}-<type>-<issue-number> master
+   ```
+
+5. **Verify creation:**
+   ```bash
+   git worktree list
+   ```
+
+6. **Inform the user with clear next steps:**
+   ```
+   ✅ Created worktree for issue #$ARGUMENTS
+   📂 Location: ../${REPO_NAME}-<type>-<issue-number>
+   🌿 Branch: <branch-name>
+
+   Next steps:
+   1. Open a new terminal
+   2. cd ../${REPO_NAME}-<type>-<issue-number>
+   3. Set up the worktree environment (if applicable to your project):
+
+      🚀 If your project has a setup script:
+      ./scripts/setup_worktree.sh (or similar)
+
+      📝 Common setup tasks for worktrees:
+      # For Python projects with virtual environments:
+      python -m venv .venv  # or: uv venv .venv
+      source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+      pip install -e .  # or: uv pip install -e .
+
+      # For Node.js projects:
+      npm install  # or: yarn install / pnpm install
+
+      # For projects with .env files:
+      cp .env.example .env  # then edit with worktree-specific paths
+
+   4. claude
+   5. Run: /gl_fix-issue $ARGUMENTS
+
+   The new Claude instance will implement the fix in an isolated worktree.
+
+   ⚠️  CRITICAL:
+   - Each worktree should have its own dependency installation if your project uses virtual environments
+   - This prevents testing against code from other worktrees
+   - Adjust environment configuration files (.env, etc.) for the worktree directory
+   ```
+
+IMPORTANT:
+- This command ONLY creates the worktree - it does NOT implement the fix
+- The user will start a new Claude instance in the worktree directory
+- The new Claude instance will run `/gl_fix-issue` to implement the solution
+- This workflow enables parallel development without branch conflicts
+
+ERROR HANDLING:
+- If worktree path already exists, inform user and suggest cleanup:
+  ```bash
+  git worktree remove ../${REPO_NAME}-<type>-<issue-number>
+  ```
+- If branch already exists, use it instead of creating new one
+- If issue not found, report error and exit

@@ -1,0 +1,186 @@
+# Create GitLab Issue with Agent Analysis and Child Issue Support
+
+DO NOT IMPLEMENT ANYTHING. DO NOT MODIFY ANY CODE FILES.
+
+## Phase 1: Agent-Based Analysis
+
+Based on the nature of $ARGUMENTS, use the appropriate agent(s) to analyze requirements:
+
+### Agent Selection Logic:
+- **Complex features or architectural changes**: Use `architect-reviewer` agent to review architecture impact
+- **Bug fixes or debugging tasks**: Use `general-purpose` agent to analyze the bug context
+- **Performance optimizations**: Use `general-purpose` agent to identify bottlenecks
+- **Code quality improvements**: Use `code-reviewer` agent to assess current state
+- **Documentation tasks**: Use `general-purpose` agent to identify gaps
+- **Exploration tasks**: Use `Explore` agent to understand codebase areas
+
+Launch the appropriate agent(s) with Task tool:
+```
+Task: Analyze requirements for: $ARGUMENTS
+- Review architecture impact if relevant
+- Identify affected components
+- Suggest implementation approach
+- Determine if task should be split into subtasks
+- Estimate complexity and effort
+```
+
+## Phase 2: Issue Complexity Assessment
+
+Based on agent analysis, determine if the issue needs to be split:
+
+### Split into child issues when:
+- Task requires changes across 3+ modules
+- Implementation has 5+ distinct phases
+- Different expertise needed for subtasks (e.g., backend + frontend)
+- Task involves both refactoring AND new features
+- Estimated effort > 2 days
+- Agent recommends splitting for clarity
+
+### If splitting is needed:
+1. Create parent issue (epic/feature)
+2. Create child issues for each subtask
+3. Link child issues to parent using GitLab API
+
+## Phase 3: Create GitLab Issue(s)
+
+Read available project documentation (CLAUDE.md, README.md, CONTRIBUTING.md, etc.) for context.
+
+### For Single Issue:
+Generate and execute 'glab issue create' with:
+- Detailed title describing the task
+- Problem/feature description with architecture context
+- Agent analysis results integrated into description
+- Affected components and files
+- Technical considerations
+- Suggested implementation approach (from agent analysis)
+
+```bash
+glab issue create --title "[Type]: Brief description" \
+                  --label "enhancement" \
+                  --description "## Overview
+$DESCRIPTION
+
+## Agent Analysis
+$AGENT_RESULTS
+
+## Affected Components
+- [Component/Module 1]: [specific files]
+- [Component/Module 2]: [specific files]
+
+## Technical Approach
+[Agent-recommended approach]
+
+## Acceptance Criteria
+- [ ] Criterion 1
+- [ ] Criterion 2"
+```
+
+### For Parent + Child Issues:
+
+#### Step 1: Create parent issue
+```bash
+# Create parent issue and capture its ID
+PARENT_ID=$(glab issue create --title "[Epic] $FEATURE_NAME" \
+                              --label "epic,enhancement" \
+                              --description "## Overview
+$EPIC_DESCRIPTION
+
+## Architecture Impact
+[From agent analysis]
+
+## Subtasks
+- [ ] Subtask 1: [Description]
+- [ ] Subtask 2: [Description]
+- [ ] Subtask 3: [Description]
+
+## Success Criteria
+[Overall success metrics]" | grep -oP '#\K\d+')
+```
+
+#### Step 2: Create child issues
+```bash
+# Create each child issue
+CHILD1_ID=$(glab issue create --title "[Subtask 1] Specific component work" \
+                             --label "enhancement,module-specific" \
+                             --description "Part of #$PARENT_ID
+
+## Subtask Description
+[Detailed description]
+
+## Dependencies
+- Depends on: [Other tasks if any]
+- Blocks: [Tasks this blocks]
+
+## Implementation Notes
+[From agent analysis]" | grep -oP '#\K\d+')
+
+CHILD2_ID=$(glab issue create --title "[Subtask 2] Another component" \
+                             --label "enhancement,module-specific" \
+                             --description "Part of #$PARENT_ID
+
+## Subtask Description
+[Details]" | grep -oP '#\K\d+')
+```
+
+#### Step 3: Link child issues to parent using GitLab API
+```bash
+# Get project ID
+PROJECT_ID=$(glab api projects/:id | jq -r '.id')
+
+# Link each child to parent with "blocks" relationship
+# Parent blocks children (children must be done before parent is complete)
+glab api --method POST "projects/$PROJECT_ID/issues/$PARENT_ID/links" \
+         -F "target_project_id=$PROJECT_ID" \
+         -F "target_issue_iid=$CHILD1_ID" \
+         -F "link_type=blocks"
+
+glab api --method POST "projects/$PROJECT_ID/issues/$PARENT_ID/links" \
+         -F "target_project_id=$PROJECT_ID" \
+         -F "target_issue_iid=$CHILD2_ID" \
+         -F "link_type=blocks"
+```
+
+### Auto-detect labels:
+- **Type labels**: 'enhancement', 'bug', 'documentation', 'refactoring', 'optimization'
+- **Scope labels**: 'epic', 'feature' (for parent issues)
+- **Module labels**: Detect from project structure (e.g., 'backend', 'frontend', 'api', 'database', 'infrastructure')
+- **Priority labels**: 'critical', 'high', 'medium', 'low' (based on agent assessment)
+
+### Link Types for Issue Relationships:
+- **relates_to**: General relationship between issues
+- **blocks**: Parent blocks child (child must complete first)
+- **is_blocked_by**: Child is blocked by parent (parent must complete first)
+
+## Phase 4: Verify and Report
+
+After creating issues:
+1. List created issues with their numbers
+2. Show the hierarchy (if parent/child created)
+3. Provide links to view issues in browser:
+   ```bash
+   glab issue view $ISSUE_ID --web
+   ```
+
+## Example: Complex Feature Breakdown
+
+**User Request**: "Add comprehensive testing framework with coverage reports"
+
+**Agent Analysis Result**: Task is complex, spans multiple modules, ~3-4 days effort
+
+**Created Structure**:
+```
+[Epic] #100: Add comprehensive testing framework
+├── #101: Set up pytest infrastructure (blocks #100)
+├── #102: Add unit tests for circuit_graph (blocks #100)
+├── #103: Add integration tests (blocks #100)
+└── #104: Set up coverage reporting (blocks #100)
+```
+
+## IMPORTANT:
+- **Always use agents first**: Let specialized agents analyze before creating issues
+- **Wait for agent completion**: Don't proceed until agent analysis is complete
+- **If requirements unclear**: Ask user for clarification BEFORE creating issues
+- **Check authentication**: If glab commands fail with 401, ask user to re-authenticate
+- **Save drafts on failure**: If API calls fail, save issue descriptions to files
+
+Your job ends after creating and linking the issue(s). Do NOT write any code or modify any files.

@@ -3,17 +3,18 @@
 Please analyze the changes in this MR $ARGUMENTS using 'glab mr view $ARGUMENTS --comments' and 'glab mr diff $ARGUMENTS' and focus on identifying critical issues related to:
 
 - Potential bugs or logic errors
-- Performance impacts (especially in simulation loops)
-- Security concerns
-- Correctness of SPICE netlist generation
-- Backward compatibility with existing code
-- Adherence to three-layer architecture
+- Performance impacts and inefficiencies
+- Security concerns (injection vulnerabilities, auth issues, data exposure)
+- Breaking changes and backward compatibility with existing code
+- Adherence to project's established architecture and design patterns
+- Test coverage for new functionality
 
 Specific areas to check:
-- Device specifications and parameter registries
-- Graph operations and netlist export
-- Optimization configurations and metrics
-- Template substitutions and PDK modes
+- Error handling and edge cases
+- API contract changes
+- Database migrations or schema changes
+- Configuration and environment changes
+- Dependencies and third-party library updates
 
 If critical issues are found, list them in a few short bullet points. If no critical issues are found, provide a simple approval.
 Sign off with a checkbox emoji: ✅ (approved) or ⚠️ (issues found).

@@ -4,7 +4,7 @@
 repos:
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -21,7 +21,7 @@ repos:
 
   # Python-specific checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: check-ast
       - id: check-docstring-first
@@ -30,8 +30,9 @@ repos:
         args: ['--pytest-test-first']
 
   # Ruff formatter and linter (replaces black, flake8, isort, and more)
+  # Configuration is centralized in pyproject.toml [tool.ruff]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.15
+    rev: v0.14.4
     hooks:
       # Run the linter
       - id: ruff
@@ -40,16 +41,17 @@ repos:
       - id: ruff-format
 
   # MyPy static type checker
+  # Configuration is centralized in pyproject.toml [tool.mypy]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v1.18.2
     hooks:
       - id: mypy
         additional_dependencies: [types-PyYAML]
-        args: [--ignore-missing-imports]
 
   # Security checks
+  # Configuration is centralized in pyproject.toml [tool.bandit]
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.6
+    rev: 1.8.6
     hooks:
       - id: bandit
         args: ['-c', 'pyproject.toml']
@@ -57,7 +59,7 @@ repos:
 
   # Requirements.txt formatting
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: requirements-txt-fixer
 
