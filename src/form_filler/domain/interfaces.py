@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from form_filler.domain.models import FieldCategory, FormField
 
@@ -10,7 +10,7 @@ from form_filler.domain.models import FieldCategory, FormField
 class PDFProcessor(Protocol):
     """Interface for PDF processing implementations."""
 
-    def extract_schema(self, pdf_path: Path) -> dict:
+    def extract_schema(self, pdf_path: Path) -> dict[str, Any]:
         """Extract form schema from PDF."""
         ...
 
@@ -22,11 +22,11 @@ class PDFProcessor(Protocol):
 class DataRepository(Protocol):
     """Interface for data persistence."""
 
-    def save(self, data: dict, path: Path) -> None:
+    def save(self, data: dict[str, Any], path: Path) -> None:
         """Save data to storage."""
         ...
 
-    def load(self, path: Path) -> dict:
+    def load(self, path: Path) -> dict[str, Any]:
         """Load data from storage."""
         ...
 

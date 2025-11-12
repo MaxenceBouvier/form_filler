@@ -42,13 +42,19 @@ class ExtractFieldsUseCase:
 
         # Categorize fields if categorizer is available
         if self.categorizer:
+            from dataclasses import replace
+
+            categorized_fields = []
             for field in fields:
-                field.category = self.categorizer.categorize(field)
+                category = self.categorizer.categorize(field)
+                categorized_fields.append(replace(field, category=category))
+            fields = categorized_fields
 
         # Create PDFForm domain model
+        # Note: PDFForm accepts list and converts to tuple in __post_init__
         pdf_form = PDFForm(
             path=str(pdf_path),
-            fields=fields,
+            fields=fields,  # type: ignore[arg-type]
             metadata={
                 "field_count": len(fields),
                 "extraction_timestamp": self._get_timestamp(),
