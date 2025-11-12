@@ -1,6 +1,6 @@
 # Review GitHub Pull Request
 
-Please analyze the changes in this PR $ARGUMENTS using 'gh pr view $ARGUMENTS --comments' and 'gh pr diff $ARGUMENTS' and focus on identifying critical issues related to:
+Please analyze the changes in this PR $ARGUMENTS using 'gh pr view $ARGUMENTS --json title,body,state,author,headRefName,baseRefName,number,url' and 'gh pr diff $ARGUMENTS' and focus on identifying critical issues related to:
 
 - Potential bugs or logic errors
 - Performance impacts and inefficiencies

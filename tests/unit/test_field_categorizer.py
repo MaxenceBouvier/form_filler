@@ -38,11 +38,11 @@ class TestRuleBasedFieldCategorizer:
         category = categorizer.categorize(field)
         assert category == FieldCategory.EMPLOYMENT
 
-    def test_categorize_legal_field(self, categorizer):
-        """Test categorizing a legal field."""
-        field = FormField(name="residence_permit", field_type=FieldType.TEXT, default_value="")
+    def test_categorize_contact_field(self, categorizer):
+        """Test categorizing a contact field."""
+        field = FormField(name="phone_number", field_type=FieldType.TEXT, default_value="")
         category = categorizer.categorize(field)
-        assert category == FieldCategory.LEGAL
+        assert category == FieldCategory.CONTACT
 
     def test_categorize_unknown_field(self, categorizer):
         """Test categorizing an unknown field."""

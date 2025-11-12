@@ -95,7 +95,8 @@ class PyPDFFormAdapter:
         elif field_type == "string":
             return FieldType.TEXT
         else:
-            return FieldType.UNKNOWN
+            # Default to TEXT for unknown types
+            return FieldType.TEXT
 
     def _get_default_value(self, field_type: FieldType) -> Any:
         """Get default value based on field type.
@@ -106,9 +107,10 @@ class PyPDFFormAdapter:
         Returns:
             Appropriate default value for the field type.
         """
-        if field_type == FieldType.BOOLEAN:
+        if field_type in (FieldType.BOOLEAN, FieldType.CHECKBOX):
             return False
         elif field_type == FieldType.NUMBER:
             return 0
         else:
+            # TEXT, DATE, CHOICE, RADIO, DROPDOWN, UNKNOWN all default to empty string
             return ""

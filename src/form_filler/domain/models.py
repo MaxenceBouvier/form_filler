@@ -1,35 +1,13 @@
 """Domain models for the form filler application."""
 
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Any
 
 from form_filler.domain.exceptions import ValidationError
+from form_filler.domain.value_objects import FieldCategory, FieldType
 
 
-class FieldType(Enum):
-    """Types of form fields."""
-
-    TEXT = "text"
-    BOOLEAN = "boolean"
-    NUMBER = "number"
-    DATE = "date"
-    CHOICE = "choice"
-    UNKNOWN = "unknown"
-
-
-class FieldCategory(Enum):
-    """Categories for organizing form fields."""
-
-    PERSONAL = "personal"
-    ADDRESS = "address"
-    FINANCIAL = "financial"
-    EMPLOYMENT = "employment"
-    LEGAL = "legal"
-    OTHER = "other"
-
-
-@dataclass(frozen=True)
+@dataclass
 class FormField:
     """Domain model for a form field.
 
@@ -89,7 +67,7 @@ class FormField:
         }
 
 
-@dataclass(frozen=True)
+@dataclass
 class PDFForm:
     """Domain model for a PDF form.
 
@@ -114,13 +92,8 @@ class PDFForm:
     """
 
     path: str
-    fields: tuple[FormField, ...]  # Use tuple for immutability
+    fields: list[FormField]
     metadata: dict[str, Any]
-
-    def __post_init__(self) -> None:
-        """Convert fields list to tuple if needed for immutability."""
-        if isinstance(self.fields, list):
-            object.__setattr__(self, "fields", tuple(self.fields))
 
     @property
     def field_count(self) -> int:
@@ -189,7 +162,7 @@ class PDFForm:
         return {field.name: field.default_value for field in self.fields}
 
 
-@dataclass(frozen=True)
+@dataclass
 class UserData:
     """Domain model for user information.
 
@@ -303,7 +276,7 @@ class UserData:
         return cls(data=source["data"], metadata=source.get("metadata", {}))
 
 
-@dataclass(frozen=True)
+@dataclass
 class FieldMapping:
     """Domain model for mapping user data fields to form fields.
 
