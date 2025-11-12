@@ -45,32 +45,21 @@ Follow these steps:
    Next steps:
    1. Open a new terminal
    2. cd ../${REPO_NAME}-<type>-<issue-number>
-   3. Set up the worktree environment (if applicable to your project):
+   3. Run the setup script:
+      bash ../${REPO_NAME}/.claude/scripts/setup_worktree.sh
 
-      🚀 If your project has a setup script:
-      ./scripts/setup_worktree.sh (or similar)
+   4. Start Claude:
+      claude
 
-      📝 Common setup tasks for worktrees:
-      # For Python projects with virtual environments:
-      python -m venv .venv  # or: uv venv .venv
-      source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-      pip install -e .  # or: uv pip install -e .
-
-      # For Node.js projects:
-      npm install  # or: yarn install / pnpm install
-
-      # For projects with .env files:
-      cp .env.example .env  # then edit with worktree-specific paths
-
-   4. claude
-   5. Run: /gh_fix-issue $ARGUMENTS
+   5. Implement the fix:
+      /gh_fix-issue $ARGUMENTS
 
    The new Claude instance will implement the fix in an isolated worktree.
 
    ⚠️  CRITICAL:
-   - Each worktree should have its own dependency installation if your project uses virtual environments
-   - This prevents testing against code from other worktrees
-   - Adjust environment configuration files (.env, etc.) for the worktree directory
+   - Each worktree has its own .venv (created by setup script)
+   - Always activate the virtual environment before working
+   - Don't modify files in other worktrees or the main repo
    ```
 
 IMPORTANT:

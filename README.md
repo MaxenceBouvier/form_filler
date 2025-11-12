@@ -1,6 +1,6 @@
 # Form Filler
 
-A Python-based utility for semi-automatically filling PDF forms with LLM assistance, specifically designed for the 2025 Swiss Tax Questionnaire (Departure).
+A Python-based utility for semi-automatically filling PDF forms with LLM assistance.
 
 [![CI](https://github.com/mbouvier/form_filler/actions/workflows/ci.yml/badge.svg)](https://github.com/mbouvier/form_filler/actions/workflows/ci.yml)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
@@ -23,7 +23,7 @@ A Python-based utility for semi-automatically filling PDF forms with LLM assista
 First, analyze the PDF form to see what fields are required:
 
 ```bash
-extract-required-info "2025 Swiss Tax Questionnaire (Departure)_A_EN.pdf"
+extract-required-info "<pdf>>.pdf"
 ```
 
 This displays all form fields, their types, and categories (personal info, address, financial, etc.).
@@ -47,7 +47,7 @@ This creates/updates a file in `resources/user_info/` containing your reusable p
 Generate the completed form:
 
 ```bash
-fill-in-pdf --input "2025 Swiss Tax Questionnaire (Departure)_A_EN.pdf" --user resources/user_info/my_profile.json
+fill-in-pdf --input "<pdf>.pdf" --user resources/user_info/my_profile.json
 ```
 
 Output is automatically saved to `resources/output/` with the naming convention: `{original_name}_autofilled.pdf`.
@@ -94,7 +94,7 @@ Form Filler supports local LLM assistance via Hugging Face transformers:
 4. **Review** the generated data
 5. **Fill form** with verified information
 
-The tool uses local models to ensure privacy - your tax information never leaves your machine.
+The tool uses local models to ensure privacy - your sensitive information never leaves your machine.
 
 ## Command Reference
 
@@ -175,7 +175,7 @@ form_to_fill/           # Source PDF forms
 - Can contain multiple profiles for different users or scenarios
 - Supports both JSON and YAML formats
 - **SECURITY:** This directory is excluded from git and protected by CI/CD validation
-- **Privacy:** Your sensitive tax information never leaves your machine
+- **Privacy:** Your sensitive information never leaves your machine
 
 #### `resources/output/`
 **Purpose:** Storage for generated PDF forms
