@@ -245,8 +245,9 @@ class TestFieldValue:
 
     def test_field_value_as_bool_invalid_type(self):
         """Test that invalid type raises error."""
-        with pytest.raises(ValidationError, match="Cannot convert .* to boolean"):
-            FieldValue(["list"], FieldType.BOOLEAN).as_bool()
+        # Unhashable types now fail at construction time
+        with pytest.raises(ValidationError, match="must be hashable"):
+            FieldValue(["list"], FieldType.BOOLEAN)
 
     def test_field_value_as_int_valid(self):
         """Test valid integer conversions."""
@@ -263,14 +264,16 @@ class TestFieldValue:
             FieldValue("text", FieldType.TEXT).as_int()
 
     def test_field_value_as_int_invalid_string(self):
-        """Test that invalid number string raises error."""
-        with pytest.raises(ValidationError, match="Cannot convert string .* to integer"):
-            FieldValue("not a number", FieldType.NUMBER).as_int()
+        """Test that invalid number string raises error at construction."""
+        # Non-numeric strings now fail at construction time, not during conversion
+        with pytest.raises(ValidationError, match="must be numeric"):
+            FieldValue("not a number", FieldType.NUMBER)
 
     def test_field_value_as_int_invalid_type(self):
         """Test that invalid type raises error."""
-        with pytest.raises(ValidationError, match="Cannot convert .* to integer"):
-            FieldValue(["list"], FieldType.NUMBER).as_int()
+        # Unhashable types now fail at construction time
+        with pytest.raises(ValidationError, match="must be hashable"):
+            FieldValue(["list"], FieldType.NUMBER)
 
     def test_field_value_as_float_valid(self):
         """Test valid float conversions."""
@@ -286,28 +289,28 @@ class TestFieldValue:
             FieldValue("text", FieldType.TEXT).as_float()
 
     def test_field_value_as_float_invalid_string(self):
-        """Test that invalid float string raises error."""
-        with pytest.raises(ValidationError, match="Cannot convert string .* to float"):
-            FieldValue("not a number", FieldType.NUMBER).as_float()
+        """Test that invalid float string raises error at construction."""
+        # Non-numeric strings now fail at construction time, not during conversion
+        with pytest.raises(ValidationError, match="must be numeric"):
+            FieldValue("not a number", FieldType.NUMBER)
 
     def test_field_value_as_float_invalid_type(self):
         """Test that invalid type raises error."""
-        with pytest.raises(ValidationError, match="Cannot convert .* to float"):
-            FieldValue({"dict": "value"}, FieldType.NUMBER).as_float()
+        # Unhashable types now fail at construction time
+        with pytest.raises(ValidationError, match="must be hashable"):
+            FieldValue({"dict": "value"}, FieldType.NUMBER)
 
     def test_field_value_is_empty(self):
         """Test empty value detection."""
         assert FieldValue(None, FieldType.TEXT).is_empty() is True
         assert FieldValue("", FieldType.TEXT).is_empty() is True
         assert FieldValue("  ", FieldType.TEXT).is_empty() is True
-        assert FieldValue([], FieldType.TEXT).is_empty() is True
-        assert FieldValue({}, FieldType.TEXT).is_empty() is True
-        assert FieldValue((), FieldType.TEXT).is_empty() is True
+        assert FieldValue((), FieldType.TEXT).is_empty() is True  # Empty tuple is hashable
 
         assert FieldValue("text", FieldType.TEXT).is_empty() is False
         assert FieldValue(0, FieldType.NUMBER).is_empty() is False
         assert FieldValue(False, FieldType.BOOLEAN).is_empty() is False
-        assert FieldValue([1], FieldType.TEXT).is_empty() is False
+        assert FieldValue((1,), FieldType.TEXT).is_empty() is False  # Non-empty tuple
 
     def test_field_value_str_representation(self):
         """Test string representation."""
@@ -320,7 +323,7 @@ class TestFieldValue:
         value1 = FieldValue("test", FieldType.TEXT)
         value2 = FieldValue("test", FieldType.TEXT)
         value3 = FieldValue("other", FieldType.TEXT)
-        value4 = FieldValue("test", FieldType.NUMBER)
+        value4 = FieldValue(123, FieldType.NUMBER)  # Use valid number instead
 
         assert value1 == value2
         assert value1 != value3
@@ -344,6 +347,89 @@ class TestFieldValue:
         assert len(data) == 1
         assert data[value1] == "data2"
 
+    def test_field_value_unhashable_list_rejected(self):
+        """Test that list values are rejected at construction time."""
+        with pytest.raises(ValidationError, match="must be hashable"):
+            FieldValue([1, 2, 3], FieldType.TEXT)
+
+    def test_field_value_unhashable_dict_rejected(self):
+        """Test that dict values are rejected at construction time."""
+        with pytest.raises(ValidationError, match="must be hashable"):
+            FieldValue({"key": "value"}, FieldType.TEXT)
+
+    def test_field_value_unhashable_set_rejected(self):
+        """Test that set values are rejected at construction time."""
+        with pytest.raises(ValidationError, match="must be hashable"):
+            FieldValue({1, 2, 3}, FieldType.TEXT)
+
+    def test_field_value_hashable_tuple_accepted(self):
+        """Test that tuple values (hashable) are accepted."""
+        value = FieldValue((1, 2, 3), FieldType.TEXT)
+        assert value.value == (1, 2, 3)
+        assert value.as_str() == "(1, 2, 3)"
+
+    def test_field_value_hashable_frozenset_accepted(self):
+        """Test that frozenset values (hashable) are accepted."""
+        value = FieldValue(frozenset([1, 2, 3]), FieldType.TEXT)
+        assert value.value == frozenset([1, 2, 3])
+
+    def test_field_value_hash_consistency(self):
+        """Test that hash is consistent across equal values."""
+        value1 = FieldValue("test", FieldType.TEXT)
+        value2 = FieldValue("test", FieldType.TEXT)
+        value3 = FieldValue(123, FieldType.NUMBER)
+
+        # Equal values have same hash
+        assert hash(value1) == hash(value2)
+        # Different values have different hashes (with high probability)
+        assert hash(value1) != hash(value3)
+
+    def test_field_value_hash_no_collision(self):
+        """Test that hash doesn't have collisions for semantically different values."""
+        # This was the bug: converting to string caused collisions
+        value1 = FieldValue((1, 2, 3), FieldType.TEXT)
+        value2 = FieldValue("(1, 2, 3)", FieldType.TEXT)
+
+        # These should have different hashes (tuple vs string)
+        # With the old implementation they would collide
+        assert hash(value1) != hash(value2)
+
+    def test_field_value_type_compatibility_boolean_invalid(self):
+        """Test that boolean fields reject incompatible types."""
+        # Valid types for boolean: bool, int, float, str
+        FieldValue(True, FieldType.BOOLEAN)  # Should not raise
+        FieldValue(1, FieldType.BOOLEAN)  # Should not raise
+        FieldValue(1.5, FieldType.BOOLEAN)  # Should not raise
+        FieldValue("yes", FieldType.BOOLEAN)  # Should not raise
+
+        # Invalid type for boolean (tuple is not accepted)
+        with pytest.raises(ValidationError, match="Boolean field type requires"):
+            FieldValue((1, 2), FieldType.BOOLEAN)
+
+    def test_field_value_type_compatibility_number_invalid(self):
+        """Test that number fields reject incompatible types."""
+        # Valid types for number: int, float, numeric string
+        FieldValue(123, FieldType.NUMBER)  # Should not raise
+        FieldValue(123.45, FieldType.NUMBER)  # Should not raise
+        FieldValue("456", FieldType.NUMBER)  # Should not raise
+
+        # Invalid type for number (tuple is not accepted)
+        with pytest.raises(ValidationError, match="NUMBER field requires"):
+            FieldValue((1, 2), FieldType.NUMBER)
+
+    def test_field_value_type_compatibility_number_invalid_string(self):
+        """Test that number fields reject non-numeric strings at construction."""
+        with pytest.raises(ValidationError, match="must be numeric"):
+            FieldValue("not a number", FieldType.NUMBER)
+
+    def test_field_value_type_compatibility_text_accepts_any(self):
+        """Test that TEXT fields accept any hashable type."""
+        # TEXT should accept various types
+        FieldValue("text", FieldType.TEXT)  # String
+        FieldValue(123, FieldType.TEXT)  # Number
+        FieldValue(True, FieldType.TEXT)  # Boolean
+        FieldValue((1, 2), FieldType.TEXT)  # Tuple
+
     def test_field_value_with_none(self):
         """Test FieldValue with None value."""
         value = FieldValue(None, FieldType.TEXT)
@@ -357,9 +443,20 @@ class TestValueObjectsIntegration:
 
     def test_field_value_with_all_field_types(self):
         """Test that FieldValue works with all FieldType values."""
+        # Use appropriate values for each field type
+        test_values = {
+            FieldType.TEXT: "test",
+            FieldType.BOOLEAN: True,
+            FieldType.CHECKBOX: False,
+            FieldType.NUMBER: 123,
+            FieldType.DATE: "2024-01-01",
+            FieldType.RADIO: "option1",
+            FieldType.DROPDOWN: "choice1",
+        }
+
         for field_type in FieldType:
             # Should not raise any errors
-            value = FieldValue("test", field_type)
+            value = FieldValue(test_values[field_type], field_type)
             assert value.field_type == field_type
 
     def test_file_path_with_field_value(self):

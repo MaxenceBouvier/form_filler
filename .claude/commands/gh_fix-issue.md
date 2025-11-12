@@ -1,7 +1,7 @@
 # Fix GitHub Issue
 
 Follow these steps:
-1. Use 'gh issue view $ARGUMENTS' to get the issue details from GitHub
+1. Use 'gh issue view #$ARGUMENTS --json title,body,labels,assignees,state' to get the issue details from GitHub
 2. Search the codebase with grep/glob to find:
    - Existing similar implementations we can reuse
    - Related files mentioned in project documentation (CLAUDE.md, README.md, etc.)

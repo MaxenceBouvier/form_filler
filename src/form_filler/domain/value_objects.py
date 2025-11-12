@@ -108,6 +108,61 @@ class FieldValue:
                 f"field_type must be a FieldType enum, got {type(self.field_type).__name__}"
             )
 
+        # Validate that value is hashable (required for immutable value objects)
+        # Unhashable types (list, dict, set) are not allowed
+        try:
+            hash(self.value)
+        except TypeError as e:
+            raise ValidationError(
+                f"FieldValue must be hashable. {type(self.value).__name__} is not hashable. "
+                f"Use immutable types like tuple instead of list, or frozenset instead of set."
+            ) from e
+
+        # Basic type compatibility validation
+        if self.value is not None:
+            self._validate_type_compatibility()
+
+    def _validate_type_compatibility(self) -> None:
+        """Validate that the value type is compatible with the field type.
+
+        This provides early validation to catch type mismatches at construction time
+        rather than during conversion operations.
+
+        Raises:
+            ValidationError: If value type is clearly incompatible with field type.
+        """
+        value_type = type(self.value)
+
+        # For BOOLEAN/CHECKBOX fields, accept bool, int, float, str
+        if self.field_type in (FieldType.BOOLEAN, FieldType.CHECKBOX):
+            if not isinstance(self.value, (bool, int, float, str)):
+                raise ValidationError(
+                    f"Boolean field type requires bool, int, float, or str value, "
+                    f"got {value_type.__name__}"
+                )
+
+        # For NUMBER fields, accept int, float, or numeric strings
+        elif self.field_type == FieldType.NUMBER:
+            if isinstance(self.value, (int, float)):
+                return  # Valid numeric type
+            elif isinstance(self.value, str):
+                # Validate that string can be converted to a number
+                try:
+                    cleaned = self.value.strip().replace(",", "").replace(" ", "")
+                    float(cleaned)
+                except (ValueError, AttributeError):
+                    raise ValidationError(
+                        f"NUMBER field with string value must be numeric, got '{self.value}'"
+                    ) from None
+            else:
+                raise ValidationError(
+                    f"NUMBER field requires int, float, or numeric string, "
+                    f"got {value_type.__name__}"
+                )
+
+        # For TEXT, DATE, RADIO, DROPDOWN - accept any hashable type
+        # (will be converted to string when needed)
+
     def as_str(self) -> str:
         """Convert value to string representation."""
         if self.value is None:
@@ -212,5 +267,5 @@ class FieldValue:
 
     def __hash__(self) -> int:
         """Return hash for use in sets and as dict keys."""
-        # Only hash immutable components
-        return hash((str(self.value), self.field_type))
+        # Safe to hash value directly since we validate hashability in __post_init__
+        return hash((self.value, self.field_type))
