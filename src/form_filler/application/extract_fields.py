@@ -51,10 +51,9 @@ class ExtractFieldsUseCase:
             fields = categorized_fields
 
         # Create PDFForm domain model
-        # Note: PDFForm accepts list and converts to tuple in __post_init__
         pdf_form = PDFForm(
             path=str(pdf_path),
-            fields=fields,  # type: ignore[arg-type]
+            fields=fields,
             metadata={
                 "field_count": len(fields),
                 "extraction_timestamp": self._get_timestamp(),

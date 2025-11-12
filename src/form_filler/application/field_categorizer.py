@@ -38,6 +38,15 @@ class RuleBasedFieldCategorizer(FieldCategorizer):
                 re.compile(r".*revenue.*", re.IGNORECASE),
                 re.compile(r".*wealth.*", re.IGNORECASE),
             ],
+            FieldCategory.LEGAL: [
+                re.compile(r".*signature.*", re.IGNORECASE),
+                re.compile(r".*legal.*", re.IGNORECASE),
+                re.compile(r".*agreement.*", re.IGNORECASE),
+                re.compile(r".*consent.*", re.IGNORECASE),
+                re.compile(r".*terms.*", re.IGNORECASE),
+                re.compile(r".*disclaimer.*", re.IGNORECASE),
+                re.compile(r".*representative.*", re.IGNORECASE),
+            ],
             FieldCategory.CONTACT: [
                 re.compile(r".*phone.*", re.IGNORECASE),
                 re.compile(r".*email.*", re.IGNORECASE),

@@ -23,12 +23,12 @@ class TestFieldType:
         """Test that FieldType enum values are immutable."""
         field_type = FieldType.TEXT
         with pytest.raises(AttributeError):
-            field_type.value = "modified"
+            field_type.value = "modified"  # type: ignore[misc]
 
     def test_field_type_equality(self):
         """Test equality comparison between FieldType values."""
         assert FieldType.TEXT == FieldType.TEXT
-        assert FieldType.TEXT != FieldType.BOOLEAN
+        assert FieldType.TEXT != FieldType.BOOLEAN  # type: ignore[comparison-overlap]
         assert FieldType.NUMBER == FieldType.NUMBER
 
     def test_field_type_string_representation(self):
@@ -44,10 +44,12 @@ class TestFieldType:
         assert FieldType.BOOLEAN in all_types
         assert FieldType.DATE in all_types
         assert FieldType.NUMBER in all_types
+        assert FieldType.CHOICE in all_types
         assert FieldType.CHECKBOX in all_types
         assert FieldType.RADIO in all_types
         assert FieldType.DROPDOWN in all_types
-        assert len(all_types) == 7
+        assert FieldType.UNKNOWN in all_types
+        assert len(all_types) == 9
 
 
 class TestFieldCategory:
@@ -58,6 +60,7 @@ class TestFieldCategory:
         assert FieldCategory.PERSONAL.value == "personal"
         assert FieldCategory.ADDRESS.value == "address"
         assert FieldCategory.CONTACT.value == "contact"
+        assert FieldCategory.LEGAL.value == "legal"
         assert FieldCategory.FINANCIAL.value == "financial"
         assert FieldCategory.EMPLOYMENT.value == "employment"
         assert FieldCategory.OTHER.value == "other"
@@ -66,12 +69,12 @@ class TestFieldCategory:
         """Test that FieldCategory enum values are immutable."""
         category = FieldCategory.PERSONAL
         with pytest.raises(AttributeError):
-            category.value = "modified"
+            category.value = "modified"  # type: ignore[misc]
 
     def test_field_category_equality(self):
         """Test equality comparison between FieldCategory values."""
         assert FieldCategory.PERSONAL == FieldCategory.PERSONAL
-        assert FieldCategory.PERSONAL != FieldCategory.ADDRESS
+        assert FieldCategory.PERSONAL != FieldCategory.ADDRESS  # type: ignore[comparison-overlap]
         assert FieldCategory.FINANCIAL == FieldCategory.FINANCIAL
 
     def test_field_category_string_representation(self):
@@ -86,10 +89,11 @@ class TestFieldCategory:
         assert FieldCategory.PERSONAL in all_categories
         assert FieldCategory.ADDRESS in all_categories
         assert FieldCategory.CONTACT in all_categories
+        assert FieldCategory.LEGAL in all_categories
         assert FieldCategory.FINANCIAL in all_categories
         assert FieldCategory.EMPLOYMENT in all_categories
         assert FieldCategory.OTHER in all_categories
-        assert len(all_categories) == 6
+        assert len(all_categories) == 7
 
 
 class TestFilePath:
@@ -105,7 +109,7 @@ class TestFilePath:
         """Test that FilePath is immutable."""
         file_path = FilePath("/path/to/file.pdf")
         with pytest.raises(AttributeError):
-            file_path.path = "/new/path"
+            file_path.path = "/new/path"  # type: ignore[misc]
 
     def test_file_path_empty_raises_error(self):
         """Test that empty path raises ValidationError."""
@@ -115,7 +119,7 @@ class TestFilePath:
     def test_file_path_non_string_raises_error(self):
         """Test that non-string path raises ValidationError."""
         with pytest.raises(ValidationError, match="File path must be a string"):
-            FilePath(123)
+            FilePath(123)  # type: ignore[arg-type]
 
     def test_file_path_null_bytes_raises_error(self):
         """Test that path with null bytes raises ValidationError."""
@@ -187,12 +191,12 @@ class TestFieldValue:
         """Test that FieldValue is immutable."""
         field_value = FieldValue("test", FieldType.TEXT)
         with pytest.raises(AttributeError):
-            field_value.value = "modified"
+            field_value.value = "modified"  # type: ignore[misc]
 
     def test_field_value_invalid_field_type_raises_error(self):
         """Test that invalid field_type raises ValidationError."""
         with pytest.raises(ValidationError, match="field_type must be a FieldType enum"):
-            FieldValue("test", "not_an_enum")
+            FieldValue("test", "not_an_enum")  # type: ignore[arg-type]
 
     def test_field_value_as_str(self):
         """Test conversion to string."""
@@ -451,8 +455,10 @@ class TestValueObjectsIntegration:
             FieldType.CHECKBOX: False,
             FieldType.NUMBER: 123,
             FieldType.DATE: "2024-01-01",
+            FieldType.CHOICE: "option_a",
             FieldType.RADIO: "option1",
             FieldType.DROPDOWN: "choice1",
+            FieldType.UNKNOWN: "unknown_value",
         }
 
         for field_type in FieldType:
@@ -472,16 +478,16 @@ class TestValueObjectsIntegration:
         """Test that all value objects maintain immutability."""
         # Enum immutability
         with pytest.raises(AttributeError):
-            FieldType.TEXT.value = "modified"
+            FieldType.TEXT.value = "modified"  # type: ignore[misc]
 
         with pytest.raises(AttributeError):
-            FieldCategory.PERSONAL.value = "modified"
+            FieldCategory.PERSONAL.value = "modified"  # type: ignore[misc]
 
         # Frozen dataclass immutability
         file_path = FilePath("/path/to/file.pdf")
         with pytest.raises(AttributeError):
-            file_path.path = "/new/path"
+            file_path.path = "/new/path"  # type: ignore[misc]
 
         field_value = FieldValue("test", FieldType.TEXT)
         with pytest.raises(AttributeError):
-            field_value.value = "modified"
+            field_value.value = "modified"  # type: ignore[misc]

@@ -1,7 +1,5 @@
 """Unit tests for domain models."""
 
-from dataclasses import FrozenInstanceError
-
 import pytest
 
 from form_filler.domain.exceptions import ValidationError
@@ -113,30 +111,32 @@ class TestPDFForm:
         assert stub["income"] == 0
         assert len(stub) == 3
 
-    def test_pdf_form_frozen(self, sample_fields):
-        """Test that PDFForm is immutable (frozen)."""
+    def test_pdf_form_mutable(self, sample_fields):
+        """Test that PDFForm is mutable."""
         pdf_form = PDFForm(path="/path/to/form.pdf", fields=sample_fields, metadata={})
 
-        with pytest.raises(FrozenInstanceError):
-            pdf_form.path = "/new/path.pdf"  # type: ignore[misc]
+        # Should be able to modify fields
+        pdf_form.path = "/new/path.pdf"
+        assert pdf_form.path == "/new/path.pdf"
 
-    def test_pdf_form_fields_as_tuple(self, sample_fields):
-        """Test that fields are converted to tuple for immutability."""
+    def test_pdf_form_fields_as_list(self, sample_fields):
+        """Test that fields remain as list (mutable)."""
         pdf_form = PDFForm(path="/path/to/form.pdf", fields=sample_fields, metadata={})
 
-        assert isinstance(pdf_form.fields, tuple)
+        assert isinstance(pdf_form.fields, list)
         assert len(pdf_form.fields) == 3
 
 
-class TestFormFieldImmutability:
-    """Test FormField immutability and special methods."""
+class TestFormFieldMutability:
+    """Test FormField mutability and special methods."""
 
-    def test_form_field_frozen(self):
-        """Test that FormField is immutable (frozen)."""
+    def test_form_field_mutable(self):
+        """Test that FormField is mutable."""
         field = FormField(name="test_field", field_type=FieldType.TEXT, default_value="")
 
-        with pytest.raises(FrozenInstanceError):
-            field.name = "new_name"  # type: ignore[misc]
+        # Should be able to modify fields
+        field.name = "new_name"
+        assert field.name == "new_name"
 
     def test_form_field_equality(self):
         """Test FormField equality comparison."""
@@ -259,12 +259,13 @@ class TestUserData:
         with pytest.raises(ValidationError, match="Source must be a dictionary"):
             UserData.from_dict("not a dict")  # type: ignore
 
-    def test_user_data_frozen(self):
-        """Test that UserData is immutable (frozen)."""
+    def test_user_data_mutable(self):
+        """Test that UserData is mutable."""
         user_data = UserData(data={"name": "Frank"})
 
-        with pytest.raises(FrozenInstanceError):
-            user_data.data = {"name": "George"}  # type: ignore[misc]
+        # Should be able to modify fields
+        user_data.data = {"name": "George"}
+        assert user_data.data["name"] == "George"
 
     def test_user_data_default_metadata(self):
         """Test UserData with default metadata."""
@@ -346,12 +347,13 @@ class TestFieldMapping:
         with pytest.raises(ValidationError, match="confidence must be between 0.0 and 1.0"):
             FieldMapping(user_field="test", form_field="test", confidence=-0.1)
 
-    def test_field_mapping_frozen(self):
-        """Test that FieldMapping is immutable (frozen)."""
+    def test_field_mapping_mutable(self):
+        """Test that FieldMapping is mutable."""
         mapping = FieldMapping(user_field="name", form_field="full_name")
 
-        with pytest.raises(FrozenInstanceError):
-            mapping.user_field = "new_name"  # type: ignore[misc]
+        # Should be able to modify fields
+        mapping.user_field = "new_name"
+        assert mapping.user_field == "new_name"
 
     def test_field_mapping_equality(self):
         """Test FieldMapping equality comparison."""

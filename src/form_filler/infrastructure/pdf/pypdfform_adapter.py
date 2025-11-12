@@ -107,9 +107,10 @@ class PyPDFFormAdapter:
         Returns:
             Appropriate default value for the field type.
         """
-        if field_type == FieldType.BOOLEAN:
+        if field_type in (FieldType.BOOLEAN, FieldType.CHECKBOX):
             return False
         elif field_type == FieldType.NUMBER:
             return 0
         else:
+            # TEXT, DATE, CHOICE, RADIO, DROPDOWN, UNKNOWN all default to empty string
             return ""
