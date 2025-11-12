@@ -44,13 +44,12 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
-line-ending = "auto"
+line-ending = "lf"
 
 [tool.ruff.lint]
 select = [
@@ -94,3 +93,8 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv", "env"]
+skips = ["B101"]  # assert_used - commonly used in tests

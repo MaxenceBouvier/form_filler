@@ -1,5 +1,4 @@
 """Tests for user data management."""
-import pytest
 
 
 class TestUserDataManager:

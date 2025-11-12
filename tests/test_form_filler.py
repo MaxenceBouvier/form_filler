@@ -1,5 +1,4 @@
 """Tests for PDF form filling functionality."""
-import pytest
 
 
 class TestFormFiller:

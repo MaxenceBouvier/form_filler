@@ -1,5 +1,4 @@
 """Tests for form inspection functionality."""
-import pytest
 
 
 class TestFormInspector:

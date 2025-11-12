@@ -1,5 +1,4 @@
 """Tests for LLM-assisted form filling."""
-import pytest
 
 
 class TestLLMAssistant:

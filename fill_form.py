@@ -12,22 +12,22 @@ See README.md for usage instructions.
 import argparse
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, cast
 
 try:
-    import yaml  # type: ignore
+    import yaml
 except ImportError:
-    yaml = None
+    yaml = None  # type: ignore[assignment]
 
 try:
-    from PyPDFForm import PdfWrapper  # type: ignore
+    from PyPDFForm import PdfWrapper
 except ImportError as exc:
     raise SystemExit(
         "PyPDFForm is required for this script. Install it with `pip install PyPDFForm`."
     ) from exc
 
 
-def load_data(path: Path) -> Dict[str, Any]:
+def load_data(path: Path) -> dict[str, Any]:
     """Load a dict from a JSON or YAML file based on extension."""
     if path.suffix.lower() in {".yaml", ".yml"}:
         if yaml is None:
@@ -35,10 +35,10 @@ def load_data(path: Path) -> Dict[str, Any]:
                 "PyYAML is not installed. Install it with `pip install pyyaml` or use a JSON file."
             )
         with path.open("r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+            return cast(dict[str, Any], yaml.safe_load(f))
     # default to JSON
     with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+        return cast(dict[str, Any], json.load(f))
 
 
 def parse_args(argv: Any = None) -> argparse.Namespace:

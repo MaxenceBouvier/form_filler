@@ -13,26 +13,25 @@ for manual editing or AI‑powered filling.  See README.md for details.
 
 import argparse
 import json
-import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 try:
-    import yaml  # type: ignore
+    import yaml
 except ImportError:
-    yaml = None  # YAML output will be disabled if PyYAML isn't installed
+    yaml = None  # type: ignore[assignment]  # YAML output will be disabled if PyYAML isn't installed
 
 try:
-    from PyPDFForm import PdfWrapper  # type: ignore
+    from PyPDFForm import PdfWrapper
 except ImportError as exc:
     raise SystemExit(
         "PyPDFForm is required for this script. Install it with `pip install PyPDFForm`."
     ) from exc
 
 
-def build_stub(schema: Dict[str, Any]) -> Dict[str, Any]:
+def build_stub(schema: dict[str, Any]) -> dict[str, Any]:
     """Return a dict of field_name -> default value based on the schema."""
-    stub: Dict[str, Any] = {}
+    stub: dict[str, Any] = {}
     properties = schema.get("properties", {})
     for field_name, meta in properties.items():
         field_type = meta.get("type")
@@ -47,13 +46,13 @@ def build_stub(schema: Dict[str, Any]) -> Dict[str, Any]:
     return stub
 
 
-def write_json(data: Dict[str, Any], path: Path) -> None:
+def write_json(data: dict[str, Any], path: Path) -> None:
     """Write a dict to a JSON file with UTF‑8 encoding and indentation."""
     with path.open("w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def write_yaml(data: Dict[str, Any], path: Path) -> None:
+def write_yaml(data: dict[str, Any], path: Path) -> None:
     """Write a dict to a YAML file.  Requires PyYAML."""
     if yaml is None:
         raise RuntimeError(
