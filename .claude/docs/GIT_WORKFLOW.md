@@ -319,31 +319,31 @@ To start working in this worktree:
 
 **This is the preferred workflow for AI assistants:**
 
-1. **Check existing branches**:
+1. **Create GitHub issue** (analyzes requirements with agents):
 ```bash
-git fetch origin
-git branch -r | grep -i feature-keywords
+/gh_write-issue Add user authentication with OAuth2
 ```
 
-2. **Create GitHub issue**:
+2. **Create worktree for parallel development**:
 ```bash
-# Note: GitHub-specific slash commands (/gh_write-issue, etc.) are not yet implemented
-# Use manual workflow below or request these commands be created
+/gh_new-worktree 42
+# Then in a new terminal: cd ../form_filler-feature-42 && claude
 ```
 
-3. **Implement fix/feature and create PR**:
+3. **Implement fix/feature** (in the worktree):
 ```bash
-# Manual workflow required - see below
+/gh_fix-issue 42
+# This command will: fetch issue details, create branch, implement, test, commit, and create PR
 ```
 
 4. **Optional automated review**:
 ```bash
-# Use code-reviewer agent or manual review process
+/gh_review-pr 123
 ```
 
-### Manual Workflow (Primary Method)
+### Manual Workflow (Alternative Method)
 
-Use this workflow for all development:
+Use this workflow when you need more control or when slash commands don't fit your use case:
 
 **Starting New Work:**
 
@@ -732,13 +732,30 @@ gh pr comment <number>
 ```
 
 ### Slash Commands
-Note: GitHub-specific slash commands are not yet implemented for this repository. Consider creating them following the pattern:
-- `/gh_write-issue` - Create new GitHub issue with labels
+
+The following GitHub workflow commands are available:
+
+- `/gh_write-issue <description>` - Create new GitHub issue with agent analysis and smart labeling
 - `/gh_new-worktree <number>` - Create git worktree for parallel development on an issue
-- `/gh_fix-issue <number>` - Complete workflow: create branch, implement fix, run tests, create PR
-- `/gh_review-pr <number>` - Automated PR review (use only if no human verification needed)
+- `/gh_fix-issue <number>` - Complete workflow: fetch issue, create branch, implement fix, run tests, commit, and create PR
+- `/gh_review-pr <number>` - Automated PR review focusing on critical issues (security, bugs, performance)
+
+**Usage Examples:**
+```bash
+# Create an issue (AI will analyze with agents and suggest subtasks if needed)
+/gh_write-issue Add comprehensive testing framework with coverage reports
+
+# Create worktree for issue #42
+/gh_new-worktree 42
+
+# Fix issue #42 (run this in the worktree)
+/gh_fix-issue 42
+
+# Review pull request #15
+/gh_review-pr 15
+```
 
 ---
 
-**Last Updated**: 2025-01-12
+**Last Updated**: 2025-11-12
 **Maintainer**: AI Assistant Documentation

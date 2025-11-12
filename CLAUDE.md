@@ -152,7 +152,7 @@
 │  4. Implement changes following project patterns            │
 │  5. Run tests and linting                                   │
 │  6. Commit with conventional format                         │
-│  7. Push branch and create pull/merge request               │
+│  7. Push branch and create pull request                     │
 │                                                              │
 │  ⛔ DO NOT make changes directly on main/master             │
 │  ⛔ DO NOT skip creating an issue first                     │
@@ -756,3 +756,57 @@ The project supports LLM-assisted form filling:
 5. Fill form with verified data
 
 Field names in the user data must match form field names for successful filling (field matcher may provide fuzzy matching in the future).
+
+## GitHub Workflow Commands
+
+This project is hosted on GitHub and includes custom slash commands for streamlined development workflows. These commands are available in `.claude/commands/`:
+
+### Available Commands
+
+1. **`/gh_write-issue <description>`**
+   - Creates GitHub issues with intelligent agent-based analysis
+   - Automatically detects complexity and suggests splitting into subtasks
+   - Applies appropriate labels based on issue type and affected modules
+   - Example: `/gh_write-issue Add comprehensive testing framework with coverage reports`
+
+2. **`/gh_new-worktree <issue-number>`**
+   - Creates git worktree for parallel development on a specific issue
+   - Automatically determines branch type (feature/fix) based on issue labels
+   - Sets up isolated directory structure: `../form_filler-<type>-<number>`
+   - Example: `/gh_new-worktree 42`
+
+3. **`/gh_fix-issue <issue-number>`**
+   - Complete implementation workflow for fixing/implementing an issue
+   - Fetches issue details, creates branch, implements changes, runs tests
+   - Commits with conventional format and creates pull request
+   - Example: `/gh_fix-issue 42`
+
+4. **`/gh_review-pr <pr-number>`**
+   - Automated pull request review focusing on critical issues
+   - Checks for bugs, security vulnerabilities, performance impacts, breaking changes
+   - Provides concise feedback with ✅ (approved) or ⚠️ (issues found)
+   - Example: `/gh_review-pr 15`
+
+### Recommended Development Workflow
+
+For new features or bug fixes, use this workflow:
+
+```bash
+# 1. Create issue with agent analysis
+/gh_write-issue Add user authentication with OAuth2
+
+# 2. Create worktree for parallel development (if working on multiple issues)
+/gh_new-worktree 42
+
+# 3. In new terminal, navigate to worktree and start Claude
+cd ../form_filler-feature-42
+claude
+
+# 4. Implement the fix/feature
+/gh_fix-issue 42
+
+# 5. Review PR (optional, can be done by team members)
+/gh_review-pr 123
+```
+
+For detailed workflow documentation, including worktree setup, environment isolation, and best practices, see `.claude/docs/GIT_WORKFLOW.md`.
