@@ -23,12 +23,12 @@ class TestFieldType:
         """Test that FieldType enum values are immutable."""
         field_type = FieldType.TEXT
         with pytest.raises(AttributeError):
-            field_type.value = "modified"  # type: ignore
+            field_type.value = "modified"
 
     def test_field_type_equality(self):
         """Test equality comparison between FieldType values."""
         assert FieldType.TEXT == FieldType.TEXT
-        assert FieldType.TEXT != FieldType.BOOLEAN  # type: ignore[comparison-overlap]
+        assert FieldType.TEXT != FieldType.BOOLEAN
         assert FieldType.NUMBER == FieldType.NUMBER
 
     def test_field_type_string_representation(self):
@@ -66,12 +66,12 @@ class TestFieldCategory:
         """Test that FieldCategory enum values are immutable."""
         category = FieldCategory.PERSONAL
         with pytest.raises(AttributeError):
-            category.value = "modified"  # type: ignore
+            category.value = "modified"
 
     def test_field_category_equality(self):
         """Test equality comparison between FieldCategory values."""
         assert FieldCategory.PERSONAL == FieldCategory.PERSONAL
-        assert FieldCategory.PERSONAL != FieldCategory.ADDRESS  # type: ignore[comparison-overlap]
+        assert FieldCategory.PERSONAL != FieldCategory.ADDRESS
         assert FieldCategory.FINANCIAL == FieldCategory.FINANCIAL
 
     def test_field_category_string_representation(self):
@@ -105,7 +105,7 @@ class TestFilePath:
         """Test that FilePath is immutable."""
         file_path = FilePath("/path/to/file.pdf")
         with pytest.raises(AttributeError):
-            file_path.path = "/new/path"  # type: ignore
+            file_path.path = "/new/path"
 
     def test_file_path_empty_raises_error(self):
         """Test that empty path raises ValidationError."""
@@ -115,7 +115,7 @@ class TestFilePath:
     def test_file_path_non_string_raises_error(self):
         """Test that non-string path raises ValidationError."""
         with pytest.raises(ValidationError, match="File path must be a string"):
-            FilePath(123)  # type: ignore
+            FilePath(123)
 
     def test_file_path_null_bytes_raises_error(self):
         """Test that path with null bytes raises ValidationError."""
@@ -124,11 +124,12 @@ class TestFilePath:
 
     def test_file_path_as_path(self):
         """Test conversion to pathlib.Path."""
-        file_path = FilePath("/path/to/file.pdf")
-        path_obj = file_path.as_path()
-        assert str(path_obj) == "/path/to/file.pdf"
         from pathlib import Path
 
+        file_path = FilePath("/path/to/file.pdf")
+        path_obj = file_path.as_path()
+        # Use as_posix() for platform-independent comparison
+        assert path_obj.as_posix() == "/path/to/file.pdf"
         assert isinstance(path_obj, Path)
 
     def test_file_path_is_pdf(self):
@@ -186,12 +187,12 @@ class TestFieldValue:
         """Test that FieldValue is immutable."""
         field_value = FieldValue("test", FieldType.TEXT)
         with pytest.raises(AttributeError):
-            field_value.value = "modified"  # type: ignore
+            field_value.value = "modified"
 
     def test_field_value_invalid_field_type_raises_error(self):
         """Test that invalid field_type raises ValidationError."""
         with pytest.raises(ValidationError, match="field_type must be a FieldType enum"):
-            FieldValue("test", "not_an_enum")  # type: ignore
+            FieldValue("test", "not_an_enum")
 
     def test_field_value_as_str(self):
         """Test conversion to string."""
@@ -471,16 +472,16 @@ class TestValueObjectsIntegration:
         """Test that all value objects maintain immutability."""
         # Enum immutability
         with pytest.raises(AttributeError):
-            FieldType.TEXT.value = "modified"  # type: ignore
+            FieldType.TEXT.value = "modified"
 
         with pytest.raises(AttributeError):
-            FieldCategory.PERSONAL.value = "modified"  # type: ignore
+            FieldCategory.PERSONAL.value = "modified"
 
         # Frozen dataclass immutability
         file_path = FilePath("/path/to/file.pdf")
         with pytest.raises(AttributeError):
-            file_path.path = "/new/path"  # type: ignore
+            file_path.path = "/new/path"
 
         field_value = FieldValue("test", FieldType.TEXT)
         with pytest.raises(AttributeError):
-            field_value.value = "modified"  # type: ignore
+            field_value.value = "modified"
