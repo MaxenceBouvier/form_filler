@@ -2,9 +2,9 @@
 
 A Python-based utility for semi-automatically filling PDF forms with LLM assistance, specifically designed for the 2025 Swiss Tax Questionnaire (Departure).
 
-[![CI](https://github.com/mbouvier/form_filler/workflows/CI/badge.svg)](https://github.com/mbouvier/form_filler/actions)
+[![CI](https://github.com/mbouvier/form_filler/actions/workflows/ci.yml/badge.svg)](https://github.com/mbouvier/form_filler/actions/workflows/ci.yml)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -15,80 +15,6 @@ A Python-based utility for semi-automatically filling PDF forms with LLM assista
 - Automatic field mapping and validation
 - Adobe-compatible PDF output
 - Cross-platform support (Linux, macOS, Windows)
-
-## Installation
-
-### Prerequisites
-- Python >= 3.13
-- [uv](https://github.com/astral-sh/uv) (recommended) or pip
-
-### Quick Install
-
-```bash
-# Using uv (recommended)
-uv pip install -e .
-
-# Or using pip
-pip install -e .
-```
-
-### Development Install
-
-```bash
-# Install with development dependencies
-uv pip install -e ".[dev]"
-
-# Set up pre-commit hooks
-pre-commit install
-```
-
-## Project Structure
-
-The project uses a `resources/` directory to organize different types of data:
-
-```
-resources/
-├── user_info/          # User database (NEVER committed)
-│   ├── profile1.json   # Individual user profiles
-│   ├── profile2.yaml   # Supports both JSON and YAML
-│   └── ...
-├── output/             # Generated PDFs (not committed)
-│   └── *_autofilled.pdf
-└── examples/           # Example configurations (committed)
-    └── sample_data.json
-```
-
-### Resources Folder Details
-
-#### `resources/user_info/`
-**Purpose:** Your personal data database
-
-- Stores all user information profiles (personal details, addresses, financial info, etc.)
-- Can contain multiple profiles for different users or scenarios
-- Supports both JSON and YAML formats
-- **SECURITY:** This directory is excluded from git and protected by CI/CD validation
-- **Privacy:** Your sensitive tax information never leaves your machine
-
-#### `resources/output/`
-**Purpose:** Storage for generated PDF forms
-
-- All auto-filled PDFs are saved here by default
-- Files follow the naming convention: `{original_name}_autofilled.pdf`
-- Not tracked by git to avoid bloating the repository
-
-#### `resources/examples/`
-**Purpose:** Sample configurations and templates
-
-- Contains example user data structures (with fake/anonymized data)
-- Useful for understanding the expected data format
-- Safe to commit as they contain no real user information
-
-### `form_to_fill/`
-**Purpose:** Source forms to be filled
-
-- Place your blank PDF forms here
-- PDFs are not committed to git (except READMEs)
-- Can also contain filled forms to extract data from
 
 ## Quick Start
 
@@ -114,17 +40,17 @@ update-user-info --only-new
 update-user-info --review
 ```
 
-This creates/updates a `user_info.json` (or `.yaml`) file containing your reusable personal data.
+This creates/updates a file in `resources/user_info/` containing your reusable personal data.
 
 ### 3. Fill the PDF Form
 
 Generate the completed form:
 
 ```bash
-fill-in-pdf --input "2025 Swiss Tax Questionnaire (Departure)_A_EN.pdf" --user user_info.json
+fill-in-pdf --input "2025 Swiss Tax Questionnaire (Departure)_A_EN.pdf" --user resources/user_info/my_profile.json
 ```
 
-Output is automatically named as `{original_pdf_name}_autofilled.pdf`.
+Output is automatically saved to `resources/output/` with the naming convention: `{original_name}_autofilled.pdf`.
 
 ## Workflow
 
@@ -195,7 +121,7 @@ update-user-info [--only-new] [--review] [--file <user_info_file>]
 **Flags:**
 - `--only-new`: Add only fields not already in user info (default)
 - `--review`: Interactive mode to review/update all values
-- `--file`: Specify custom user info file path (default: `user_info.json`)
+- `--file`: Specify custom user info file path (default: stored in `resources/user_info/`)
 
 ### `fill-in-pdf`
 
@@ -208,7 +134,7 @@ fill-in-pdf --input <pdf_file> --user <user_info_file> [--output <output_file>]
 **Arguments:**
 - `--input`: Path to source PDF form (required)
 - `--user`: Path to user info file (required)
-- `--output`: Custom output name (optional, defaults to `{input}_autofilled.pdf`)
+- `--output`: Custom output name (optional, defaults to `resources/output/{input}_autofilled.pdf`)
 
 ## How It Works
 
@@ -220,9 +146,97 @@ Form Filler is built on:
 
 The tool extracts PDF schema using `PyPDFForm.wrapper.schema`, maintains user data in JSON/YAML format, and fills forms with `adobe_mode=True` for proper compatibility.
 
+## Project Structure
+
+The project uses a `resources/` directory to organize different types of data:
+
+```
+resources/
+├── user_info/          # User database (NEVER committed)
+│   ├── profile1.json   # Individual user profiles
+│   ├── profile2.yaml   # Supports both JSON and YAML
+│   └── ...
+├── output/             # Generated PDFs (not committed)
+│   └── *_autofilled.pdf
+└── examples/           # Example configurations (committed)
+    └── sample_data.json
+
+form_to_fill/           # Source PDF forms
+├── blank_form.pdf      # Forms to be filled (not committed)
+└── README.md           # Documentation (committed)
+```
+
+### Resources Folder Details
+
+#### `resources/user_info/`
+**Purpose:** Your personal data database
+
+- Stores all user information profiles (personal details, addresses, financial info, etc.)
+- Can contain multiple profiles for different users or scenarios
+- Supports both JSON and YAML formats
+- **SECURITY:** This directory is excluded from git and protected by CI/CD validation
+- **Privacy:** Your sensitive tax information never leaves your machine
+
+#### `resources/output/`
+**Purpose:** Storage for generated PDF forms
+
+- All auto-filled PDFs are saved here by default
+- Files follow the naming convention: `{original_name}_autofilled.pdf`
+- Not tracked by git to avoid bloating the repository
+
+#### `resources/examples/`
+**Purpose:** Sample configurations and templates
+
+- Contains example user data structures (with fake/anonymized data)
+- Useful for understanding the expected data format
+- Safe to commit as they contain no real user information
+
+#### `form_to_fill/`
+**Purpose:** Source forms to be filled
+
+- Place your blank PDF forms here
+- PDFs are not committed to git (except READMEs)
+- Can also contain filled forms to extract data from
+
+## Installation
+
+### Prerequisites
+- Python >= 3.13
+- [uv](https://github.com/astral-sh/uv) (recommended) or pip
+
+### Quick Install
+
+```bash
+# Create virtual environment with uv (recommended)
+uv venv .venv --python 3.13
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install the package
+uv pip install -e .
+
+# Or using standard pip
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+### Development Install
+
+```bash
+# Create virtual environment with uv
+uv venv .venv --python 3.13
+source .venv/bin/activate
+
+# Install with development dependencies
+uv pip install -e ".[dev]"
+
+# Set up pre-commit hooks
+pre-commit install
+```
+
 ## Development
 
-### Project Structure
+### Project Code Structure
 
 ```
 form_filler/
@@ -253,7 +267,7 @@ pytest -v
 
 ```bash
 # Format code
-black .
+ruff format .
 
 # Lint code
 ruff check .
@@ -280,7 +294,6 @@ Pre-commit hooks will automatically run these checks before each commit.
 ### Development
 - pytest >= 7.0.0
 - pytest-cov >= 4.0.0
-- black >= 23.0.0
 - ruff >= 0.1.0
 - mypy >= 1.0.0
 - pre-commit >= 3.0.0
